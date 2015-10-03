@@ -9,6 +9,7 @@
   "author": "Kevin Peters",
   "license": "MIT",
   "dependencies": {
-    "handbrake-js": "^2.0.6"
+    "handbrake-js": "^2.0.6",
+    "lodash": "^3.10.1"
   }
 }
