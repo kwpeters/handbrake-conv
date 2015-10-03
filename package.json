@@ -1,0 +1,14 @@
+{
+  "name": "handbrake-conv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kevin Peters",
+  "license": "MIT",
+  "dependencies": {
+    "handbrake-js": "^2.0.6"
+  }
+}

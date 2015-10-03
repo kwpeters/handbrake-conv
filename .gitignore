@@ -1,0 +1,6 @@
+# Emacs temporary files
+.tern-port
+
+/node_modules/
+
+*.m4v
