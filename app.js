@@ -3,12 +3,14 @@ var hbjs = require('handbrake-js');
 
 var info = {
     input: 'Bubble Guppies s02e02.m4v',
-    output: 'Bubble Guppies s02e02 (test output).mkv'
+    output: 'Bubble Guppies s02e02-test.mkv'
 };
 
 var hbConfig = {
     input: info.input,
-    output: info.output
+    output: info.output,
+    preset: "Universal",
+    encoder: 'x264'
 };
 
 var hb = hbjs.spawn(hbConfig);
