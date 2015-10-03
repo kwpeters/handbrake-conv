@@ -1,7 +1,7 @@
 var path        = require('path'),
+    argv        = require('yargs').argv;
     hbjs        = require('handbrake-js'),
     _           = require('lodash'),
-    conversions = require('./config'),
     defaultConversionOptions = {
         preset: "Universal",
         encoder: 'x264'
@@ -10,52 +10,21 @@ var path        = require('path'),
 doIt();
 
 function doIt() {
-    //
-    // If there are any conversion consisting of just a string, assume that the
-    // string is the path to the input file.
-    //
+
+    var conversions;
+
+    if (argv._.length > 0) {
+        // Command line arguments were used.  Treat each one as an input file.
+        conversions = argv._;
+    } else {
+        // Consult config.js for conversion information.
+        conversions= require('./config');
+    }
+
     conversions = _.map(conversions, function (curConversion) {
-        var conversionObj = {};
-
-        // If the current conversion is an object, do nothing.
-        if (_.isObject(curConversion)) {return curConversion;}
-
-        if (_.isString(curConversion)) {
-            conversionObj = {
-                input: curConversion
-            };
-        } else {
-            throw new Error('Unknown configuration specified: ' + curConversion);
-        }
-
-        return conversionObj;
-    });
-
-    //
-    // Assign default conversion options for any that have not been specified.
-    //
-    conversions = _.map(conversions, function (curConversion) {
-        _.defaults(curConversion, defaultConversionOptions);
+        curConversion = normalizeConversion (curConversion);
         return curConversion;
     });
-
-
-    //
-    // If output was not specified, assume a .mkv file in the same directory as the
-    // input.
-    //
-    conversions = _.map(conversions, function (curConversion) {
-        var inputPathParts;
-
-        // If the current conversion has an output file specified, do nothing.
-        if (curConversion.output) {return curConversion;}
-
-        inputPathParts = splitPath(curConversion.input);
-        curConversion.output = inputPathParts.dirName + '/' + inputPathParts.baseName + '.mkv';
-
-        return curConversion;
-    });
-
 
     conversions.forEach(function (curConversion) {
         var handbrake;
@@ -63,8 +32,45 @@ function doIt() {
         console.log('Starting conversion:');
         console.dir(curConversion);
 
-        runHandbrake(curConversion);
+        if (!argv.dryrun) {
+            runHandbrake(curConversion);
+        }
+
     });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Normalizes various configuration representations into a consistent object.
+//
+////////////////////////////////////////////////////////////////////////////////
+function normalizeConversion(conversion) {
+    //
+    // If the current conversion is just a string, assume that the string is
+    // the path to the input file.
+    //
+    if (_.isString(conversion)) {
+        conversion = {input: conversion};
+    }
+
+    //
+    // Assign default conversion options for any that have not been specified.
+    //
+    _.defaults(conversion, defaultConversionOptions);
+
+    //
+    // If output was not specified, assume a .mkv file in the same directory as the
+    // input.
+    //
+    var inputPathParts;
+
+    // If the current conversion has an output file specified, do nothing.
+    if (conversion.output === undefined) {
+        inputPathParts = splitPath(conversion.input);
+        conversion.output = inputPathParts.dirName + '/' + inputPathParts.baseName + '.mkv';
+    }
+
+    return conversion;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

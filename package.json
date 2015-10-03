@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "handbrake-js": "^2.0.6",
-    "lodash": "^3.10.1"
+    "lodash": "^3.10.1",
+    "yargs": "^3.26.0"
   }
 }
