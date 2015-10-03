@@ -11,7 +11,7 @@ var hbConfig = {
     output: info.output
 };
 
-var hb = hbjs.spawn;
+var hb = hbjs.spawn(hbConfig);
 hb.on('error', function onError(err) {
     console.log('Error!');
     console.log(err);
