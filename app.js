@@ -63,7 +63,7 @@ function doIt() {
         console.log('Starting conversion:');
         console.dir(curConversion);
 
-        //runHandbrake(curConversion);
+        runHandbrake(curConversion);
     });
 }
 
