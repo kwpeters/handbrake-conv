@@ -30,12 +30,12 @@ function doIt() {
         return curConversion;
     });
 
-    funcs = conversions.map(function (curConversion) {
+    funcs = conversions.map(function (curConversion, index, conversions) {
         return function () {
             var handbrakePromise;
 
             console.log('--------------------------------------------------------------------------------');
-            console.log('Starting conversion:');
+            console.log('Starting conversion %d of %d', index + 1, conversions.length);
             console.dir(curConversion);
 
             handbrakePromise = runHandbrake(curConversion);
