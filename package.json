@@ -11,6 +11,7 @@
   "dependencies": {
     "handbrake-js": "^2.0.6",
     "lodash": "^3.10.1",
+    "q": "^1.4.1",
     "yargs": "^3.26.0"
   }
 }
