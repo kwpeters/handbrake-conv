@@ -1,6 +1,13 @@
+//
+// todo:
+//     1. Remove input file after successfully completing.
+//     2. Usage information
+//     3. Glob support
+//
+
 var path        = require('path'),
     q           = require('q'),
-    argv        = require('yargs').argv;
+    argv        = require('yargs').argv,
     hbjs        = require('handbrake-js'),
     _           = require('lodash'),
     defaultConversionOptions = {
@@ -8,9 +15,9 @@ var path        = require('path'),
         encoder: 'x264'
     };
 
-doIt();
+main();
 
-function doIt() {
+function main() {
 
     var conversions,
         funcs,
