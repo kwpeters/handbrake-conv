@@ -1,4 +1,5 @@
 var path        = require('path'),
+    q           = require('q'),
     argv        = require('yargs').argv;
     hbjs        = require('handbrake-js'),
     _           = require('lodash'),
@@ -11,7 +12,10 @@ doIt();
 
 function doIt() {
 
-    var conversions;
+    var conversions,
+        funcs,
+        numSucceeded = 0,
+        numErrors = 0;
 
     if (argv._.length > 0) {
         // Command line arguments were used.  Treat each one as an input file.
@@ -21,22 +25,50 @@ function doIt() {
         conversions= require('./config');
     }
 
-    conversions = _.map(conversions, function (curConversion) {
+    conversions = conversions.map(function (curConversion) {
         curConversion = normalizeConversion (curConversion);
         return curConversion;
     });
 
-    conversions.forEach(function (curConversion) {
-        var handbrake;
-        console.log('--------------------------------------------------------------------------------');
-        console.log('Starting conversion:');
-        console.dir(curConversion);
+    funcs = conversions.map(function (curConversion) {
+        return function () {
+            var handbrakePromise;
 
-        if (!argv.dryrun) {
-            runHandbrake(curConversion);
-        }
+            console.log('--------------------------------------------------------------------------------');
+            console.log('Starting conversion:');
+            console.dir(curConversion);
 
+            handbrakePromise = runHandbrake(curConversion);
+            handbrakePromise.then(
+                function onHandbrakeSuccess() {
+                    numSucceeded += 1;
+                },
+                function onHandbrakeError() {
+                    numErrors += 1;
+                }
+            );
+
+            return handbrakePromise;
+        };
     });
+
+    runSequence(funcs)
+        .then(function () {
+            console.log('--------------------------------------------------------------------------------');
+            console.log('%d transcodings finished successfully', numSucceeded);
+            console.log('%d transcodings errored', numErrors);
+        })
+        .done();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Runs an array of promise returning functions in order and returns a promise
+// for the last one.
+//
+////////////////////////////////////////////////////////////////////////////////
+function runSequence(funcs) {
+    return funcs.reduce(q.when, q('foo'));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,42 +132,47 @@ function splitPath(filePath) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 function runHandbrake(config) {
+    var dfd = q.defer();
 
     handbrake = hbjs.spawn(config);
 
     handbrake.on('error', function onError(err) {
-        console.log('Error!');
+        console.log('Error encountered transcoding %s.', config.input);
         console.log(err);
+        dfd.reject(err);
     });
 
-    handbrake.on('start', function onStart() {
-        //console.log('Start (CLI launched)');
-    });
+    // handbrake.on('start', function onStart() {
+    //     console.log('Start (CLI launched)');
+    // });
 
-    handbrake.on('begin', function onBegin() {
-        console.log('Begin (encoding has begun)');
-    });
+    // handbrake.on('begin', function onBegin() {
+    //     console.log('Begin (encoding has begun)');
+    // });
 
-    handbrake.on('progress', function onProgress(progress) {
-        // console.log(
-        //     "Task %d of %d, percent complete: %s, ETA: %s",
-        //     progress.taskNumber,
-        //     progress.taskCount,
-        //     progress.percentComplete,
-        //     progress.eta
-        // );
-    });
+    // handbrake.on('progress', function onProgress(progress) {
+    //     // console.log(
+    //     //     "Task %d of %d, percent complete: %s, ETA: %s",
+    //     //     progress.taskNumber,
+    //     //     progress.taskCount,
+    //     //     progress.percentComplete,
+    //     //     progress.eta
+    //     // );
+    //     //console.log('%s: %s', config.input, progress.percentComplete);
+    // });
 
-    handbrake.on('output', function onOutput(output) {
-        console.log(output);
-    });
+    // handbrake.on('output', function onOutput(output) {
+    //     console.log(output);
+    // });
 
-    handbrake.on('end', function onEnd() {
-        //console.log('End (encoding completed)');
-    });
+    // handbrake.on('end', function onEnd() {
+    //     console.log('End (encoding completed)');
+    // });
 
     handbrake.on('complete', function onComplete() {
         //console.log('Complete (CLI exited)');
+        dfd.resolve(config.output);
     });
 
+    return dfd.promise;
 }
