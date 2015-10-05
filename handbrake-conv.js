@@ -6,6 +6,7 @@
 //
 
 var path        = require('path'),
+    os          = require('os'),
     q           = require('q'),
     argv        = require('yargs').argv,
     hbjs        = require('handbrake-js'),
@@ -18,6 +19,11 @@ var path        = require('path'),
 main();
 
 function main() {
+
+    if (argv.help || argv.usage) {
+        printUsage();
+        process.exit(0);
+    }
 
     var conversions,
         funcs,
@@ -70,13 +76,37 @@ function main() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Runs an array of promise returning functions in order and returns a promise
-// for the last one.
+// Prints usage information.
+//
+////////////////////////////////////////////////////////////////////////////////
+function printUsage() {
+    var text = [
+        "usage:",
+        "    node handbrake-conv [--help | --usage]",
+        "        Displays usage information for this program.",
+        "",
+        "    node handbrake-conv.js file1 [file2 file3 ...]",
+        "        Converts the specified files to mkv files using the Universal",
+        "        preset.",
+        "",
+        "    node handbrake-conv.js",
+        "        Conversions will be read from config.js."
+    ];
+
+    console.log(text.join(os.EOL));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Executes an array of promise returning functions in order and returns a
+// promise for the last one.
 //
 ////////////////////////////////////////////////////////////////////////////////
 function runSequence(funcs) {
     return funcs.reduce(q.when, q('foo'));
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -112,6 +142,7 @@ function normalizeConversion(conversion) {
     return conversion;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Returns an object with properties: dirName, baseName and extName
@@ -132,6 +163,7 @@ function splitPath(filePath) {
         extName: extName
     };
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
