@@ -1,9 +1,4 @@
-//
-// todo:
-//     1. Remove input file after successfully completing.
-//     2. Usage information
-//     3. Glob support
-//
+/* global process */
 
 var path        = require('path'),
     os          = require('os'),
@@ -19,6 +14,7 @@ var path        = require('path'),
 main();
 
 function main() {
+    "use strict";
 
     if (argv.help || argv.usage) {
         printUsage();
@@ -35,6 +31,7 @@ function main() {
         conversions = argv._;
     } else {
         // Consult config.js for conversion information.
+        // todo: Invoking with zero arguments should probably show usage instead.
         conversions= require('./config');
     }
 
@@ -80,6 +77,8 @@ function main() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 function printUsage() {
+    "use strict";
+
     var text = [
         "usage:",
         "    node handbrake-conv [--help | --usage]",
@@ -104,6 +103,7 @@ function printUsage() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 function runSequence(funcs) {
+    "use strict";
     return funcs.reduce(q.when, q('foo'));
 }
 
@@ -114,6 +114,8 @@ function runSequence(funcs) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 function normalizeConversion(conversion) {
+    "use strict";
+
     //
     // If the current conversion is just a string, assume that the string is
     // the path to the input file.
@@ -128,15 +130,32 @@ function normalizeConversion(conversion) {
     _.defaults(conversion, defaultConversionOptions);
 
     //
+    // Normalize the input file path.  This is done so that string comparisons
+    // can be made with calculated output file names.
+    // For example, filename.mpg needs to be equal to ./filename.mpg.
+    //
+    conversion.input = normalizePath(conversion.input);
+
+    //
     // If output was not specified, assume a .mkv file in the same directory as the
     // input.
     //
-    var inputPathParts;
+    var inputPathParts,
+        outputPath;
 
     // If the current conversion has an output file specified, do nothing.
     if (conversion.output === undefined) {
         inputPathParts = splitPath(conversion.input);
-        conversion.output = inputPathParts.dirName + '/' + inputPathParts.baseName + '.mkv';
+        outputPath = inputPathParts.dirName + '/' + inputPathParts.baseName + '.mkv';
+
+        // If the outputPath we just formulated matches the input path, then
+        // postfix the basename with a constant string to make the output
+        // filename unique.
+        if (outputPath === conversion.input) {
+            outputPath = inputPathParts.dirName + '/' + inputPathParts.baseName + '-converted.mkv';
+        }
+
+        conversion.output = outputPath;
     }
 
     return conversion;
@@ -145,10 +164,13 @@ function normalizeConversion(conversion) {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Returns an object with properties: dirName, baseName and extName
+// Returns an object with properties: dirName (does not include trailing "/"),
+// baseName and extName (extName includes the ".").
 //
 ////////////////////////////////////////////////////////////////////////////////
 function splitPath(filePath) {
+    "use strict";
+
     var dirName,
         baseName,
         extName;
@@ -165,12 +187,21 @@ function splitPath(filePath) {
 }
 
 
+function normalizePath(filePath) {
+    "use strict";
+
+    var pathParts = splitPath(filePath);
+    return pathParts.dirName + '/' + pathParts.baseName + pathParts.extName;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Runs Handbrake with the specified configuration.
 //
 ////////////////////////////////////////////////////////////////////////////////
 function runHandbrake(config) {
+    "use strict";
+
     var dfd = q.defer();
 
     handbrake = hbjs.spawn(config);
