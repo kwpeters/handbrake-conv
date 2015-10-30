@@ -204,7 +204,7 @@ function runHandbrake(config) {
 
     var dfd = q.defer();
 
-    handbrake = hbjs.spawn(config);
+    var handbrake = hbjs.spawn(config);
 
     handbrake.on('error', function onError(err) {
         console.log('Error encountered transcoding %s.', config.input);
