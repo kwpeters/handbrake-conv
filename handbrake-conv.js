@@ -102,7 +102,7 @@ function printUsage() {
         "    node handbrake-conv [--help | --usage]",
         "        Displays usage information for this program.",
         "",
-        "    node handbrake-conv.js file1 [file2 file3 ...]",
+        "    node handbrake-conv.js glob1 [glob2 glob3 ...]",
         "        Converts the specified files to mkv files using the Universal",
         "        preset.",
         "",
