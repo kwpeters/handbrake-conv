@@ -4,6 +4,7 @@ var path        = require('path'),
     os          = require('os'),
     q           = require('q'),
     argv        = require('yargs').argv,
+    glob        = require('glob-all'),
     hbjs        = require('handbrake-js'),
     _           = require('lodash'),
     defaultConversionOptions = {
@@ -27,19 +28,25 @@ function main() {
         numErrors = 0;
 
     if (argv._.length > 0) {
-        // Command line arguments were used.  Treat each one as an input file.
-        conversions = argv._;
+        // Command line arguments were used.  Treat each one as a file glob.
+        conversions = glob.sync(argv._);
     } else {
         // Consult config.js for conversion information.
         // todo: Invoking with zero arguments should probably show usage instead.
         conversions= require('./config');
     }
 
+    //
+    // Normalize the conversion objects to fill in any missing properties.
+    //
     conversions = conversions.map(function (curConversion) {
-        curConversion = normalizeConversion (curConversion);
+        curConversion = normalizeConversion(curConversion);
         return curConversion;
     });
 
+    //
+    // Create an array of functions that will perform each conversion.
+    //
     funcs = conversions.map(function (curConversion, index, conversions) {
         return function () {
             var handbrakePromise;
@@ -62,6 +69,9 @@ function main() {
         };
     });
 
+    //
+    // Run the conversions.
+    //
     runSequence(funcs)
         .then(function () {
             console.log('--------------------------------------------------------------------------------');

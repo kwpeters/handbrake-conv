@@ -9,9 +9,10 @@
   "author": "Kevin Peters",
   "license": "MIT",
   "dependencies": {
-    "handbrake-js": "^2.0.6",
-    "lodash": "^3.10.1",
-    "q": "^1.4.1",
-    "yargs": "^3.26.0"
+    "glob-all": "3.0.1",
+    "handbrake-js": "2.0.6",
+    "lodash": "3.10.1",
+    "q": "1.4.1",
+    "yargs": "3.26.0"
   }
 }
