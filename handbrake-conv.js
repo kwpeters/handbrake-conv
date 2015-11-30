@@ -37,6 +37,14 @@ function main() {
     }
 
     //
+    // At this point we should have some conversions.
+    //
+    if (conversions.length === 0) {
+        console.log('No conversions specified.');
+        process.exit(1);
+    }
+
+    //
     // Normalize the conversion objects to fill in any missing properties.
     //
     conversions = conversions.map(function (curConversion) {
