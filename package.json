@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "glob-all": "3.0.1",
-    "handbrake-js": "2.0.6",
+    "handbrake-js": "^5.0.0",
     "lodash": "3.10.1",
     "q": "1.4.1",
     "yargs": "3.26.0"
