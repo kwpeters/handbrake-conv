@@ -1,16 +1,22 @@
 /* global process */
 
-var path        = require('path'),
-    os          = require('os'),
-    q           = require('q'),
-    argv        = require('yargs').argv,
-    glob        = require('glob-all'),
-    hbjs        = require('handbrake-js'),
-    _           = require('lodash'),
-    defaultConversionOptions = {
-        preset: "Universal",
-        encoder: 'x264'
-    };
+const path = require('path');
+const os   = require('os');
+const q    = require('q');
+const argv = require('yargs').argv;
+const glob = require('glob-all');
+const hbjs = require('handbrake-js');
+const _    = require('lodash');
+
+
+// const defaultConversionOptions = {
+//     preset: "Universal",
+//     encoder: 'x264'
+// };
+
+const defaultConversionOptions = {
+    preset: "Roku 1080p30 Surround"
+};
 
 main();
 
@@ -22,10 +28,10 @@ function main() {
         process.exit(0);
     }
 
-    var conversions,
-        funcs,
-        numSucceeded = 0,
-        numErrors = 0;
+    let conversions;
+    let funcs;
+    let numSucceeded = 0;
+    let numErrors = 0;
 
     if (argv._.length > 0) {
         // Command line arguments were used.  Treat each one as a file glob.
@@ -81,12 +87,12 @@ function main() {
     // Run the conversions.
     //
     runSequence(funcs)
-        .then(function () {
-            console.log('--------------------------------------------------------------------------------');
-            console.log('%d transcodings finished successfully', numSucceeded);
-            console.log('%d transcodings errored', numErrors);
-        })
-        .done();
+    .then(function () {
+        console.log('--------------------------------------------------------------------------------');
+        console.log('%d transcodings finished successfully', numSucceeded);
+        console.log('%d transcodings errored', numErrors);
+    })
+    .done();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,8 +109,7 @@ function printUsage() {
         "        Displays usage information for this program.",
         "",
         "    node handbrake-conv.js glob1 [glob2 glob3 ...]",
-        "        Converts the specified files to mkv files using the Universal",
-        "        preset.",
+        "        Converts the specified files",
         "",
         "    node handbrake-conv.js",
         "        Conversions will be read from config.js."
@@ -155,22 +160,22 @@ function normalizeConversion(conversion) {
     conversion.input = normalizePath(conversion.input);
 
     //
-    // If output was not specified, assume a .mkv file in the same directory as the
+    // If output was not specified, assume a .mp4 file in the same directory as the
     // input.
     //
-    var inputPathParts,
-        outputPath;
+    let inputPathParts;
+    let outputPath;
 
     // If the current conversion has an output file specified, do nothing.
     if (conversion.output === undefined) {
         inputPathParts = splitPath(conversion.input);
-        outputPath = inputPathParts.dirName + '/' + inputPathParts.baseName + '.mkv';
+        outputPath = inputPathParts.dirName + '/' + inputPathParts.baseName + '.mp4';
 
         // If the outputPath we just formulated matches the input path, then
         // postfix the basename with a constant string to make the output
         // filename unique.
         if (outputPath === conversion.input) {
-            outputPath = inputPathParts.dirName + '/' + inputPathParts.baseName + '-converted.mkv';
+            outputPath = inputPathParts.dirName + '/' + inputPathParts.baseName + '-converted.mp4';
         }
 
         conversion.output = outputPath;
@@ -226,7 +231,9 @@ function runHandbrake(config) {
 
     handbrake.on('error', function onError(err) {
         console.log('Error encountered transcoding %s.', config.input);
-        console.log(err);
+        console.log("Error Name:", err.name);
+        console.log("Error Message:", err.message);
+        console.log("Error Output", err.output);
         dfd.reject(err);
     });
 
